@@ -7,7 +7,7 @@
 # The browser demo in web/ is copied into the site as demo/.
 using Documenter, FastLieAlign
 
-const USER = "USERNAME"                                # set to the GitHub user or organization before deploying
+const USER = "mikesha2"                                # set to the GitHub user or organization before deploying
 const REPO = "github.com/$USER/FastLieAlign.jl"
 
 makedocs(;

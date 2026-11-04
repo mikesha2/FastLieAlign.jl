@@ -1,7 +1,7 @@
 # FastLieAlign.jl — vector alignment in matrix Lie groups
 
-[![CI](https://github.com/USERNAME/FastLieAlign.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/USERNAME/FastLieAlign.jl/actions/workflows/CI.yml)
-[![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://USERNAME.github.io/FastLieAlign.jl/dev/)
+[![CI](https://github.com/mikesha2/FastLieAlign.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/mikesha2/FastLieAlign.jl/actions/workflows/CI.yml)
+[![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://mikesha2.github.io/FastLieAlign.jl/dev/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21045016.svg)](https://doi.org/10.5281/zenodo.21045016)
 
 Code and reproduction scripts for the manuscript ***Vector alignment in matrix Lie
@@ -10,14 +10,14 @@ the alignment methods, the scripts which reproduce the figures and tables of the
 manuscript, the documentation site and an interactive browser demo.
 
 ```julia
-using Pkg; Pkg.add(url = "https://github.com/USERNAME/FastLieAlign.jl")
+using Pkg; Pkg.add(url = "https://github.com/mikesha2/FastLieAlign.jl")
 using FastLieAlign
 G = Lorentz(); g = branch_cut_align(G, X, Y)       # X, Y: 4×m matrices of four-vectors
 ```
 
 The documentation, with a user guide and the API reference, is at
-<https://USERNAME.github.io/FastLieAlign.jl/dev/>, and the browser demo at
-<https://USERNAME.github.io/FastLieAlign.jl/dev/demo/>.
+<https://mikesha2.github.io/FastLieAlign.jl/dev/>, and the browser demo at
+<https://mikesha2.github.io/FastLieAlign.jl/dev/demo/>.
 
 The work generalizes the earlier study
 

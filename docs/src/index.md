@@ -23,7 +23,7 @@ A Gauss–Newton refinement on the group reaches the least squares solution from
 
 ```julia
 using Pkg
-Pkg.add(url = "https://github.com/USERNAME/FastLieAlign.jl")
+Pkg.add(url = "https://github.com/mikesha2/FastLieAlign.jl")
 ```
 
 The package needs Julia 1.10 or newer and depends on the standard library `LinearAlgebra`;
