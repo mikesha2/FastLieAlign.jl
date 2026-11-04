@@ -3,7 +3,7 @@
 An interactive page runs the method in the browser, with the numerical work compiled to
 WebAssembly and a WebGPU Monte Carlo study.
 
-[Open the demo](demo/index.html)
+[Open the demo](https://USERNAME.github.io/FastLieAlign.jl/dev/demo/) (served as `demo/` next to this page)
 
 It covers Lorentz transformations from particle four-momenta in ``SO(3,1)``, superposition of
 molecules in ``SE(3)``, one-turn maps in ``Sp(4)``, two-qubit gate identification in ``U(4)``,

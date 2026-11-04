@@ -21,8 +21,6 @@ SpecialEuclidean
 PoincareSE
 Similarity
 rotation_group
-matsize
-identity_element
 in_group
 in_algebra
 random_group

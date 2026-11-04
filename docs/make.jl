@@ -1,8 +1,9 @@
 # Build the documentation site.  From the repository root:
 #   julia --project=. -e 'using Pkg; Pkg.instantiate()'
 #   julia --project=docs -e 'using Pkg; Pkg.instantiate()'
-#   JULIA_LOAD_PATH='@:.:@stdlib' julia --project=docs docs/make.jl
-# The package is loaded from the repository environment through the load path.
+#   JULIA_LOAD_PATH="@:$PWD:@stdlib" julia --project=docs docs/make.jl
+# The package is loaded from the repository environment through the load path; the path
+# must be absolute because the example blocks run from the build directory.
 # The browser demo in web/ is copied into the site as demo/.
 using Documenter, FastLieAlign
 

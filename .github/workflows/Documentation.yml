@@ -24,5 +24,5 @@ jobs:
       - name: Build and deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          JULIA_LOAD_PATH: '@:.:@stdlib'   # the package is loaded from the repository environment
+          JULIA_LOAD_PATH: '@:${{ github.workspace }}:@stdlib'   # the package is loaded from the repository environment
         run: julia --project=docs docs/make.jl
