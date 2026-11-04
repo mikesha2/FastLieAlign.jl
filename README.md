@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/mikesha2/FastLieAlign.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/mikesha2/FastLieAlign.jl/actions/workflows/CI.yml)
 [![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://mikesha2.github.io/FastLieAlign.jl/dev/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21045016.svg)](https://doi.org/10.5281/zenodo.21045016)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21045015.svg)](https://doi.org/10.5281/zenodo.21045015)
 
 Code and reproduction scripts for the manuscript ***Vector alignment in matrix Lie
 groups*** (Congzhou M. Sha). This repository contains a Julia package implementing

@@ -5,7 +5,7 @@ related by an unknown element ``g`` of a classical matrix Lie group, recover ``g
 The package implements the Lie algebra method of the paper
 
 > C. M. Sha, *Vector alignment in matrix Lie groups*, Computer Physics Communications (submitted),
-> code and reproduction scripts on [Zenodo](https://doi.org/10.5281/zenodo.21045016),
+> code and reproduction scripts on [Zenodo](https://doi.org/10.5281/zenodo.21045015),
 
 which generalizes [Optimal alignment of Lorentz orientation and generalization to matrix Lie
 groups](https://arxiv.org/abs/2506.14994), J. Comput. Appl. Math. 485 (2026) 117482.
