@@ -31,7 +31,7 @@ a Gauss–Newton refinement on the group.
 **Version 2 (October 2026).** This version accompanies the revised manuscript.
 The Julia code and figures are unchanged from version 1.
 
-**Version 3 (October 2026).** The Julia module gains `branch_cut_align`, the extension of the method which is exact on the whole
+**Version 3 (November 2026).** The Julia module gains `branch_cut_align`, the extension of the method which is exact on the whole
 group (an involution computed from the negative eigenvalues for the real groups; a
 reflection of an even number of eigenvalues for SL(n,C) and SU(n), which makes the
 logarithm traceless at the cost of one Schur form; and for Spin(n) the involution and
