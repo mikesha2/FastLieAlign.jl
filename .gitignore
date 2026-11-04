@@ -1,0 +1,9 @@
+# Lean build products (Mathlib is several gigabytes)
+lean/.lake/
+# Documenter output
+docs/build/
+# OS and editor files
+.DS_Store
+# Julia
+*.jl.cov
+*.jl.mem

@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vector alignment in matrix Lie groups</title>
+<meta name="description" content="Interactive demonstrations of the Lie algebra alignment method, running in WebAssembly and WebGPU.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="style.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Interactive companion to the paper</p>
+    <h1>Vector alignment in matrix&nbsp;Lie&nbsp;groups</h1>
+    <p class="lede">Many measurements in physics determine a linear map from pairs of input and output vectors, where the map is known in advance to lie in a matrix Lie group. This page runs the Lie algebra method on such problems in your browser. The numerical core is written in C and compiled to WebAssembly, and the Monte Carlo study runs as a WebGPU compute shader.</p>
+    <div class="formula">$$g_0 = YX^{+},\qquad L = \operatorname{proj}_{\mathfrak g}\bigl(\log g_0\bigr),\qquad g = \exp L$$</div>
+    <div class="badges">
+      <span class="badge" id="wasm-status">WebAssembly: loading…</span>
+      <span class="badge" id="gpu-status">WebGPU: checking…</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="wrap">
+    <a href="#method">Method</a>
+    <a href="#lorentz">Particles</a>
+    <a href="#registration">Molecules</a>
+    <a href="#ring">Storage ring</a>
+    <a href="#quantum">Quantum gates</a>
+    <a href="#gpu">GPU Monte Carlo</a>
+    <a href="#tests">Tests</a>
+    <a href="#code">Code</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<section id="method">
+  <h2>The method</h2>
+  <div class="two">
+    <div>
+      <p>We are given input vectors as the columns of $X$ and output vectors as the columns of $Y$, with $Y \approx g_\ast X$ for an unknown $g_\ast$ in a group $G$. The least squares matrix $g_0 = YX^{+}$ fits the data, but it is generally not in $G$. A Lorentz transformation fitted this way does not preserve the Minkowski metric, and an accelerator one-turn map fitted this way is not symplectic.</p>
+      <p>The Lie algebra method takes the principal logarithm of $g_0$, projects it orthogonally onto the Lie algebra $\mathfrak g$, and exponentiates. The result is always in $G$. For the classical groups the projection has a closed form. If the group preserves a form $M$, so that $g^{\star} M g = M$, then</p>
+      <div class="formula small">$$\operatorname{proj}_{\mathfrak g}(L) = \tfrac12\bigl(L - M^{-1}L^{\star}M\bigr).$$</div>
+      <p>The estimate can then be refined by a few Gauss-Newton steps on the group, which minimize $\|gX - Y\|_F$ over $g \in G$.</p>
+    </div>
+    <div>
+      <table class="groups">
+        <thead><tr><th>Group</th><th>Projection</th><th>Example in physics</th></tr></thead>
+        <tbody>
+          <tr><td>$SO(n)$</td><td>$\tfrac12(L - L^{\mathsf T})$</td><td>Rigid rotations</td></tr>
+          <tr><td>$SL(n)$</td><td>$L - \tfrac{\operatorname{tr} L}{n} I$</td><td>Volume preserving maps</td></tr>
+          <tr><td>$SO(3,1)$</td><td>$\tfrac12(L - \eta L^{\mathsf T}\eta)$, $\eta=\operatorname{diag}(-1,1,1,1)$</td><td>Lorentz transformations</td></tr>
+          <tr><td>$Sp(2k)$</td><td>$\tfrac12(L + J L^{\mathsf T} J)$</td><td>Accelerator one-turn maps</td></tr>
+          <tr><td>$U(n)$</td><td>$\tfrac12(L - L^{\dagger})$</td><td>Quantum gates</td></tr>
+          <tr><td>$SE(3)$</td><td>skew block, keep translation</td><td>Point cloud registration</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<section id="lorentz">
+  <h2>Two observers measuring the same particles</h2>
+  <p class="intro">Suppose two detectors, or two observers moving relative to each other, record the four-momenta $(E, p_x, p_y, p_z)$ of the same set of particles, measured in GeV. Special relativity tells us that the two sets of measurements are related by a Lorentz transformation $\Lambda$, which is a $4\times4$ matrix satisfying $\Lambda^{\mathsf T}\eta\Lambda = \eta$ with $\eta = \operatorname{diag}(-1,1,1,1)$. This condition is what keeps the mass of every particle, $m^2 = E^2 - |\mathbf p|^2$, the same in both frames. Here the particles are electrons, muons, pions, kaons and protons with momenta of about 1&nbsp;GeV, and each component of each measurement has a small Gaussian error.</p>
+  <p class="intro">Once we have an estimate of $\Lambda$, we can use it to predict what the second observer would see for a new particle. If the estimate is not a Lorentz transformation, then it changes the mass of that particle, and the change grows with the particle's momentum. The plot shows this for a proton.</p>
+  <div class="panel">
+    <div class="controls">
+      <label><span>Relative speed $\beta = v/c$ <output id="lz-eta-out"></output></span><input id="lz-eta" type="range" min="0" max="3" step="0.01" value="0.8"></label>
+      <label><span>Particles $m$ <output id="lz-m-out"></output></span><input id="lz-m" type="range" min="5" max="200" value="20"></label>
+      <label><span>Detector error <output id="lz-sigma-out"></output></span><input id="lz-sigma" type="range" min="-4" max="-1" step="0.05" value="-2.5"></label>
+      <button id="lz-draw" class="primary">New events</button>
+    </div>
+    <div class="canvas-row">
+      <figure><canvas id="lz-plot" aria-label="Apparent proton mass against momentum"></canvas><figcaption>Error in the proton mass, $|m' - m_p|$, after transforming a proton of momentum $|\mathbf p|$ with each estimate</figcaption></figure>
+      <div class="side">
+        <div class="legend">
+          <span><i class="line" style="--c:var(--c-ls)"></i>Least squares $g_0$</span>
+          <span><i class="line" style="--c:var(--c-la)"></i>Lie algebra $g$</span>
+          <span><i class="line" style="--c:var(--c-gn)"></i>Gauss-Newton</span>
+        </div>
+      </div>
+    </div>
+    <table class="results" id="lz-table"></table>
+  </div>
+</section>
+
+
+<section id="registration">
+  <h2>Superimposing two copies of a molecule</h2>
+  <p class="intro">In structural chemistry and biology we often have two sets of atomic coordinates for the same molecule, for example from two crystal structures or two frames of a simulation, and we want the rigid motion that best superimposes one on the other. A rigid motion is a rotation followed by a translation. Written in homogeneous coordinates, where a point $\mathbf x$ becomes $(\mathbf x, 1)$, it is a $4\times4$ matrix in the special Euclidean group $SE(3)$. The noise here plays the part of thermal motion of the atoms, in ångströms. Both estimates below are exact rigid motions, so neither can stretch or shear the molecule. We compare the Lie algebra estimate with the best rigid motion, found by Gauss-Newton. For a round molecule such as C₆₀ the atoms are spread evenly in every direction and the two agree closely, while for a long, thin α-helix they differ, because the input vectors are then far from isotropic. (The paper proves the agreement for isotropic data in the rotation and unitary groups; for rigid motions it is an observation.) Drag the view to rotate it.</p>
+  <div class="panel">
+    <div class="controls">
+      <label><span>Molecule</span>
+        <select id="rg-shape">
+          <option value="c60">Buckminsterfullerene, C₆₀</option>
+          <option value="helix">α-helix backbone, 24 residues</option>
+          <option value="adamantane">Adamantane carbon cage</option>
+          <option value="methane">Methane</option>
+        </select>
+      </label>
+      <label><span>Thermal noise <output id="rg-sigma-out"></output></span><input id="rg-sigma" type="range" min="0" max="0.5" step="0.01" value="0.2"></label>
+      <label><span>Magnify differences <output id="rg-mag-out"></output></span><input id="rg-mag" type="range" min="1" max="50" step="1" value="10"></label>
+      <button id="rg-draw" class="primary">New motion</button>
+    </div>
+    <div class="canvas-row">
+      <canvas id="rg-canvas" class="plot3d" aria-label="Molecule superposition"></canvas>
+      <div class="side">
+        <div class="legend">
+          <span><i class="dot" style="--c:var(--ink-soft)"></i>Measured atoms $Y$</span>
+          <span><i class="line" style="--c:var(--c-la)"></i>$gX$, Lie algebra</span>
+          <span><i class="line" style="--c:var(--c-gn)"></i>Gauss-Newton</span>
+        </div>
+        <p class="note">Bonds are drawn between neighbouring atoms. The differences between each estimate and the true positions are magnified by the factor on the slider, so that small errors in the rotation can be seen.</p>
+      </div>
+    </div>
+    <table class="results" id="rg-table"></table>
+  </div>
+</section>
+
+<section id="ring">
+  <h2>One-turn map of a storage ring</h2>
+  <p class="intro">Beam position monitors record a particle's transverse coordinates $(x, y, p_x, p_y)$ on every turn. Consecutive turns give $X$ and $Y$, and the one-turn map, which is symplectic, follows from $Y \approx MX$. A fitted map that is not symplectic has eigenvalues off the unit circle, so tracking with it makes the beam grow or decay. The symplectic Lie algebra estimate tracks indefinitely.</p>
+  <div class="panel">
+    <div class="controls">
+      <label><span>Tune $Q_x$ <output id="ar-qx-out"></output></span><input id="ar-qx" type="range" min="0.05" max="0.45" step="0.001" value="0.312"></label>
+      <label><span>Tune $Q_y$ <output id="ar-qy-out"></output></span><input id="ar-qy" type="range" min="0.05" max="0.45" step="0.001" value="0.268"></label>
+      <label><span>BPM noise <output id="ar-sigma-out"></output></span><input id="ar-sigma" type="range" min="-3.5" max="-1" step="0.05" value="-2"></label>
+      <label><span>Turns recorded <output id="ar-turns-out"></output></span><input id="ar-turns" type="range" min="16" max="2048" step="16" value="256"></label>
+      <button id="ar-draw" class="primary">New measurement</button>
+    </div>
+    <div class="stack">
+      <figure><canvas id="ar-phase" class="wide3" aria-label="Phase space"></canvas><figcaption>Horizontal phase space over 20000 turns, with $x/\sqrt{\beta}$ across and the normalized momentum up. The least squares map spirals inwards or outwards because its eigenvalues are off the unit circle; with noise in both $X$ and $Y$ they usually lie inside it, so the beam appears to damp away. When the tunes are simple fractions, the true orbit closes on itself after a few hundred turns, so it appears as separate dots.</figcaption></figure>
+      <figure><canvas id="ar-amp" class="wide" aria-label="Amplitude"></canvas><figcaption>Betatron amplitude over 20000 turns, relative to the first turn</figcaption></figure>
+    </div>
+    <div class="legend center">
+      <span><i class="line" style="--c:var(--ink)"></i>True map</span>
+      <span><i class="line" style="--c:var(--c-ls)"></i>Least squares</span>
+      <span><i class="line" style="--c:var(--c-la)"></i>Lie algebra</span>
+    </div>
+    <table class="results" id="ar-table"></table>
+  </div>
+</section>
+
+<section id="quantum">
+  <h2>Identifying a quantum gate</h2>
+  <p class="intro">A two-qubit gate is a $4\times4$ unitary matrix $U$. We prepare $m$ random probe states, apply the gate, and measure the output amplitudes with noise. The least squares fit is not unitary, so it does not describe a physical gate. The Lie algebra estimate projects onto $\mathfrak u(4)$, the skew-Hermitian matrices, and is unitary by construction. Each cell shows a matrix entry, with its size as the brightness and its complex phase as the hue. The CNOT gate has an eigenvalue at $-1$, where the principal logarithm is not defined (Section 3.3 of the paper). The noise moves this eigenvalue slightly off the negative axis, the logarithm picks whichever branch is nearest, and the exponential undoes that choice, so the estimate of $U$ is still accurate at moderate noise. At the largest noise setting the Lie algebra estimate of CNOT can be several times worse than Gauss-Newton, which is the ill-conditioning of the logarithm near $-1$ described in Section 4.1 of the paper.</p>
+  <div class="panel">
+    <div class="controls">
+      <label><span>Gate</span>
+        <select id="qc-gate">
+          <option value="0">√SWAP</option>
+          <option value="1">Controlled-S</option>
+          <option value="2" selected>√iSWAP</option>
+          <option value="4">CNOT</option>
+          <option value="3">Random U(4)</option>
+        </select>
+      </label>
+      <label><span>Probe states $m$ <output id="qc-m-out"></output></span><input id="qc-m" type="range" min="4" max="200" value="12"></label>
+      <label><span>Amplitude noise $\sigma$ <output id="qc-sigma-out"></output></span><input id="qc-sigma" type="range" min="-3.5" max="-0.5" step="0.05" value="-1.3"></label>
+      <button id="qc-draw" class="primary">New probes</button>
+    </div>
+    <div class="matrices" id="qc-matrices"></div>
+    <div class="legend center"><span><i class="wheel"></i>Phase of each entry: red 0°, green 90°, cyan 180°, purple −90°. Fainter cells are smaller in size.</span></div>
+    <table class="results" id="qc-table"></table>
+  </div>
+</section>
+
+
+<section id="gpu">
+  <h2>GPU Monte Carlo</h2>
+  <p class="intro">Each GPU thread draws its own $g_\ast$ and data, computes the Lie algebra estimate, and then refines it with four Gauss-Newton steps, all in single precision. Only three numbers per trial leave the GPU. The same experiment also runs in WebAssembly, in double precision, for comparison. The histograms show the relative error $\|\hat g - g_\ast\|_F / \|g_\ast\|_F$ on a log scale, and the ratio column is the median error of the Lie algebra estimate divided by that of Gauss-Newton. For $SO(3)$ the ratio is about 1.1, close to one, as Corollary 4.3 of the paper predicts for the rotation group with nearly isotropic data. For noncompact groups, such as $Sp(4)$, it is about 2: there the Lie algebra estimate differs from the least squares solution over the group already at first order, and the logarithm and the exponential can amplify the noise when $g_\ast$ is far from the identity (Section 4 of the paper).</p>
+  <div class="panel">
+    <div class="controls">
+      <label><span>Group</span>
+        <select id="mc-group">
+          <option value="1,3" selected>SO(3)</option>
+          <option value="2,3">SL(3)</option>
+          <option value="3,4">SO(3,1)</option>
+          <option value="4,4">Sp(4)</option>
+          <option value="5,4">SE(3)</option>
+        </select>
+      </label>
+      <label><span>Trials <output id="mc-trials-out"></output></span><input id="mc-trials" type="range" min="10" max="20" step="1" value="16"></label>
+      <label><span>Vectors $m$ <output id="mc-m-out"></output></span><input id="mc-m" type="range" min="6" max="128" value="12"></label>
+      <label><span>Noise $\sigma$ <output id="mc-sigma-out"></output></span><input id="mc-sigma" type="range" min="-3" max="-0.5" step="0.05" value="-1.3"></label>
+      <div class="buttons">
+        <button id="mc-gpu" class="primary">Run on GPU</button>
+        <button id="mc-cpu">Run in WebAssembly</button>
+        <button id="mc-sweep-btn">Sweep noise on GPU</button>
+      </div>
+    </div>
+    <div class="canvas-row two-plots">
+      <figure><canvas id="mc-hist-gpu"></canvas><figcaption id="mc-cap-gpu">WebGPU, f32</figcaption></figure>
+      <figure><canvas id="mc-hist-cpu"></canvas><figcaption id="mc-cap-cpu">WebAssembly, f64</figcaption></figure>
+    </div>
+    <div class="legend center">
+      <span><i class="box" style="--c:var(--c-la)"></i>Lie algebra $g$</span>
+      <span><i class="box" style="--c:var(--c-gn)"></i>Gauss-Newton</span>
+    </div>
+    <table class="results" id="mc-table"></table>
+    <figure class="sweep"><canvas id="mc-sweep" aria-label="Median error against noise"></canvas><figcaption id="mc-cap-sweep">Median error against noise for the selected group. The dashed line has slope 1, so a curve parallel to it means the error grows in proportion to the noise.</figcaption></figure>
+  </div>
+</section>
+
+<section id="tests">
+  <h2>Tests</h2>
+  <p class="intro">Each test below checks one property of the method or of its building blocks, and most of them correspond to a result in the paper. Unless stated otherwise, a test runs over the eight groups $SO(3)$, $SL(3)$, $SO(3,1)$, $Sp(4)$, $SE(3)$, $SO(6)$, $Sp(6)$ and $U(4)$. The tests run in the browser on random data, so pressing the button again gives a fresh set of draws. A test marked as an expected failure checks that the method fails where the theory says it should.</p>
+  <div class="panel">
+    <div class="controls"><button id="ts-run" class="primary">Run all tests</button><span id="ts-summary" class="note"></span></div>
+    <table class="results tests" id="ts-table"></table>
+  </div>
+</section>
+
+<section id="code">
+  <h2>Code</h2>
+  <p class="intro">All of the numerics on this page are in the two files below. The C file has no dependencies, not even the C library, and implements its own logarithm, exponential and random numbers. The Python file is the reference implementation used in the paper.</p>
+  <div class="snippet">
+    <pre><code class="language-python"># the whole method, in Python
+g0 = Y @ np.linalg.pinv(X)          # least squares fit
+L = scipy.linalg.logm(g0).real     # principal logarithm
+g = scipy.linalg.expm(proj(L))     # project onto the Lie algebra, map back to G</code></pre>
+  </div>
+  <div class="tabs" role="tablist">
+    <button role="tab" data-file="src/lialign.c" data-lang="c" aria-selected="true">lialign.c <small>WebAssembly</small></button>
+    <button role="tab" data-file="src/lialign.wgsl" data-lang="rust">lialign.wgsl <small>WebGPU</small></button>
+    <button role="tab" data-file="src/lialign.py" data-lang="python">lialign.py</button>
+    <button role="tab" data-file="src/accelerator.py" data-lang="python">accelerator.py</button>
+    <button role="tab" data-file="app.js" data-lang="javascript">app.js</button>
+  </div>
+  <div class="codebox">
+    <div class="codebar"><span id="code-name">lialign.c</span><a id="code-dl" href="src/lialign.c" download>Download</a></div>
+    <pre><code id="code-view" class="language-c">Loading…</code></pre>
+  </div>
+  <p class="note">Rebuild the WebAssembly module with <code>src/build.sh</code>, which needs <code>clang</code> with the <code>wasm32</code> target and <code>wasm-ld</code>.</p>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>C. M. Sha, <em>Vector alignment in matrix Lie groups</em>. Code and Lean&nbsp;4 formalization: <a href="https://doi.org/10.5281/zenodo.21045016">doi:10.5281/zenodo.21045016</a>. MIT License.</p>
+  </div>
+</footer>
+</body>
+</html>
